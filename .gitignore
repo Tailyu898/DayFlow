@@ -1,0 +1,10 @@
+*.log
+*.png
+node_modules/
+*.zip
+*.tar
+*.tar.gz
+.env
+.env.*
+!.env.example
+手機試用啟動紀錄.md
