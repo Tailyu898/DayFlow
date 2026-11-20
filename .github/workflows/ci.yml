@@ -1,0 +1,39 @@
+name: DAYFLOW verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dayflow-checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check syntax, assets and tests
+        run: node scripts/verify.mjs
+      - name: Package verified frontend
+        run: tar -czf dayflow-verified.tar.gz -C dist .
+      - name: Save verified frontend
+        uses: actions/upload-artifact@v7
+        with:
+          name: dayflow-${{ github.sha }}
+          path: dayflow-verified.tar.gz
+          retention-days: 7
+          if-no-files-found: error
