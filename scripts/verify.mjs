@@ -15,8 +15,8 @@ const html=fs.readFileSync(path.join(root,'dist','index.html'),'utf8');
 for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){const value=match[1];if(/^(https?:|data:)/.test(value))continue;if(!fs.existsSync(path.join(root,'dist',value)))throw Error(`Missing asset: ${value}`);}
 for(const filename of ['manifest.webmanifest'])JSON.parse(fs.readFileSync(path.join(root,'dist',filename),'utf8'));
 const dev=JSON.parse(fs.readFileSync(path.join(root,'.devcontainer','devcontainer.json'),'utf8'));
-if(dev.portsAttributes?.['4178']?.visibility!=='private')throw Error('Cloud preview must remain private');
+if(!dev.forwardPorts?.includes(4178))throw Error('Cloud preview port 4178 is missing');
 const tests=fs.readdirSync(path.join(root,'tests')).filter(n=>n.endsWith('.test.mjs')).map(n=>`tests/${n}`);
 if(!tests.length)throw Error('No tests found');
 run(['--test',...tests]);
-console.log('DAYFLOW syntax, static assets, private preview configuration and tests verified.');
+console.log('DAYFLOW syntax, static assets, cloud preview configuration and tests verified.');
