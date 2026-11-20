@@ -1,4 +1,4 @@
-name: DAYFLOW verification
+name: DAYFLOW verification and Pages
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: dayflow-checks-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   verify:
@@ -37,3 +37,33 @@ jobs:
           path: dayflow-verified.tar.gz
           retention-days: 7
           if-no-files-found: error
+
+  deploy-pages:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: dayflow-pages
+      cancel-in-progress: false
+    steps:
+      - name: Check out verified source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload app directory
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy public trial app
+        id: deployment
+        uses: actions/deploy-pages@v5
